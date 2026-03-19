@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.bun/
+bun.lockb
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+.next/
+.turbo/
+
+# Project specific
+packages/opencode/src/storage/*.db
+packages/opencode/src/storage/*.db-journal
