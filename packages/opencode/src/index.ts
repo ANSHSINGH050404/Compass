@@ -2,10 +2,9 @@ import { Server } from './server/server.ts';
 import { Bus } from './bus/index.ts';
 import { SessionEvent, PartEvent } from './bus/bus-event.ts';
 import { SessionManager } from './session/index.ts';
-
 import { createInterface } from 'node:readline/promises';
 
-async function main() {
+async function runTUI() {
   const directory = process.cwd();
   const sessionId = 'test-session';
   const rl = createInterface({
@@ -17,7 +16,6 @@ async function main() {
   console.log(`Working directory: ${directory}`);
   console.log('Type "exit" to quit.\n');
 
-  // 1. Subscribe to Bus events
   Bus.subscribe(SessionEvent.Updated, (data) => {
     if (data.status === 'busy') process.stdout.write('\n[Agent] Thinking...');
   });
@@ -33,19 +31,41 @@ async function main() {
 
   while (true) {
     const userPrompt = await rl.question('\nUser > ');
-
-    if (userPrompt.toLowerCase() === 'exit') {
-      console.log('Goodbye!');
-      break;
-    }
-
+    if (userPrompt.toLowerCase() === 'exit') break;
     if (!userPrompt.trim()) continue;
-
     await Server.handleRequest(directory, sessionId, userPrompt);
-    console.log(); // New line after response
+    console.log();
   }
-
   rl.close();
+}
+
+async function runServe() {
+  console.log('--- 🚀 OpenCode Headless Server ---');
+  console.log('Server running on http://localhost:4096');
+  // In real app, this would start the Hono server
+}
+
+async function runAuth() {
+  console.log('--- 🔑 OpenCode Authentication ---');
+  console.log('Use "opencode auth <provider>" to store API keys.');
+}
+
+async function main() {
+  const [,, command] = process.argv;
+
+  switch (command) {
+    case 'serve':
+      await runServe();
+      break;
+    case 'auth':
+      await runAuth();
+      break;
+    case 'agent':
+    case 'tui':
+    default:
+      await runTUI();
+      break;
+  }
 }
 
 main().catch(console.error);
