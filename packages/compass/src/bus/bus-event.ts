@@ -16,5 +16,11 @@ export const PartEvent = {
 };
 
 export const ToolEvent = {
-  Executed: { name: 'tool:executed' } as EventDef<{ toolId: string; args: any; result: any }>,
+  Executed: { name: 'tool:executed' } as EventDef<{
+    sessionId: string;
+    toolId: string;
+    callId?: string;
+    args: any;
+    result: any;
+  }>,
 };

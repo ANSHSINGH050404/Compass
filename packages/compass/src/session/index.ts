@@ -25,9 +25,9 @@ export interface Session {
 const sessions = new Map<string, Session>();
 
 export const SessionManager = {
-  create(directory: string): Session {
+  create(directory: string, id?: string): Session {
     const session: Session = {
-      id: Math.random().toString(36).substring(7),
+      id: id || Math.random().toString(36).substring(7),
       directory,
       messages: [],
       status: 'idle',

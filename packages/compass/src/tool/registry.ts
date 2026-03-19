@@ -1,7 +1,7 @@
 export interface ToolInfo {
   id: string;
   description: string;
-  parameters: Record<string, any>;
+  parameters: any;
   execute: (args: any, ctx: { directory: string }) => Promise<any>;
 }
 

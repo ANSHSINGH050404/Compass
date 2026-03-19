@@ -1,4 +1,4 @@
-import { Server } from './server/server.ts';
+import { Server, startHttpServer } from './server/server.ts';
 import { Bus } from './bus/index.ts';
 import { SessionEvent, PartEvent } from './bus/bus-event.ts';
 import { SessionManager } from './session/index.ts';
@@ -41,8 +41,7 @@ async function runTUI() {
 
 async function runServe() {
   console.log('--- 🚀 OpenCode Headless Server ---');
-  console.log('Server running on http://localhost:4096');
-  // In real app, this would start the Hono server
+  startHttpServer();
 }
 
 async function runAuth() {

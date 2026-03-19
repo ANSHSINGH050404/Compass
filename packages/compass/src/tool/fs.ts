@@ -1,14 +1,15 @@
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Glob } from 'bun';
+import { z } from 'zod';
 import { ToolRegistry } from './registry.ts';
 
 export const ReadTool = {
   id: 'read',
   description: 'Read the contents of a file.',
-  parameters: {
-    path: { type: 'string', description: 'Relative path to the file.' }
-  },
+  parameters: z.object({
+    path: z.string().describe('Relative path to the file.'),
+  }),
   async execute(args: { path: string }, ctx: { directory: string }) {
     const fullPath = join(ctx.directory, args.path);
     const content = await readFile(fullPath, 'utf8');
@@ -19,10 +20,10 @@ export const ReadTool = {
 export const WriteTool = {
   id: 'write',
   description: 'Write or overwrite a file with new content.',
-  parameters: {
-    path: { type: 'string', description: 'Relative path to the file.' },
-    content: { type: 'string', description: 'The new content to write.' }
-  },
+  parameters: z.object({
+    path: z.string().describe('Relative path to the file.'),
+    content: z.string().describe('The new content to write.'),
+  }),
   async execute(args: { path: string, content: string }, ctx: { directory: string }) {
     const fullPath = join(ctx.directory, args.path);
     await writeFile(fullPath, args.content, 'utf8');
@@ -33,9 +34,9 @@ export const WriteTool = {
 export const LsTool = {
   id: 'ls',
   description: 'List files in a directory.',
-  parameters: {
-    directory: { type: 'string', description: 'Relative path to the directory (optional).' }
-  },
+  parameters: z.object({
+    directory: z.string().describe('Relative path to the directory (optional).').optional(),
+  }),
   async execute(args: { directory?: string }, ctx: { directory: string }) {
     const targetDir = join(ctx.directory, args.directory || '.');
     const files = await readdir(targetDir, { withFileTypes: true });
@@ -49,9 +50,9 @@ export const LsTool = {
 export const GlobTool = {
   id: 'glob',
   description: 'Search for files matching a glob pattern.',
-  parameters: {
-    pattern: { type: 'string', description: 'The glob pattern (e.g. "**/*.ts").' }
-  },
+  parameters: z.object({
+    pattern: z.string().describe('The glob pattern (e.g. "**/*.ts").'),
+  }),
   async execute(args: { pattern: string }, ctx: { directory: string }) {
     const glob = new Glob(args.pattern);
     const results = [];
@@ -65,14 +66,14 @@ export const GlobTool = {
 export const GrepTool = {
   id: 'grep',
   description: 'Search for a string or regex in files.',
-  parameters: {
-    pattern: { type: 'string', description: 'The regex pattern to search for.' },
-    glob: { type: 'string', description: 'Glob pattern to filter files (optional).' }
-  },
+  parameters: z.object({
+    pattern: z.string().describe('The regex pattern to search for.'),
+    glob: z.string().describe('Glob pattern to filter files (optional).').optional(),
+  }),
   async execute(args: { pattern: string, glob?: string }, ctx: { directory: string }) {
     const globPattern = args.glob || '**/*';
     const glob = new Glob(globPattern);
-    const regex = new RegExp(args.pattern, 'g');
+    const regex = new RegExp(args.pattern);
     const matches: { file: string, line: number, content: string }[] = [];
 
     for await (const file of glob.scan(ctx.directory)) {

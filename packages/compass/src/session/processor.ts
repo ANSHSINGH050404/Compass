@@ -2,9 +2,10 @@ import { Session, SessionManager } from './index.ts';
 import { Bus } from '../bus/index.ts';
 import { LLM } from './llm.ts';
 import { ToolRegistry } from '../tool/registry.ts';
-import { PermissionNext } from '../permission/next.ts';
-import { PartEvent } from '../bus/bus-event.ts';
+import { PartEvent, ToolEvent } from '../bus/bus-event.ts';
 import { ConfigLoader } from '../config/config.ts';
+import '../tool/bash.ts';
+import '../tool/fs.ts';
 
 export const SessionProcessor = {
   create(sessionId: string) {
@@ -37,28 +38,33 @@ export const SessionProcessor = {
               break;
 
             case 'tool-call':
-              const permission = await PermissionNext.ask(chunk.toolId, chunk.args, 'standard');
-              if (permission.status === 'allow') {
-                try {
-                  const result = await ToolRegistry.run(chunk.toolId, chunk.args, session.directory);
-                  message.parts.push({
-                    id: Math.random().toString(36).substring(7),
-                    type: 'tool',
-                    content: JSON.stringify(result),
-                    metadata: { toolId: chunk.toolId, args: chunk.args, status: 'success' }
-                  });
-                } catch (error: any) {
-                  message.parts.push({
-                    id: Math.random().toString(36).substring(7),
-                    type: 'tool',
-                    content: error.message,
-                    metadata: { toolId: chunk.toolId, args: chunk.args, status: 'error' }
-                  });
+              message.parts.push({
+                id: Math.random().toString(36).substring(7),
+                type: 'tool',
+                content: `\n\n[Tool Call] ${chunk.toolId}\n${JSON.stringify(chunk.args)}`,
+                metadata: { toolId: chunk.toolId, args: chunk.args, callId: chunk.callId, status: 'call' }
+              });
+              break;
+
+            case 'tool-result':
+              message.parts.push({
+                id: Math.random().toString(36).substring(7),
+                type: 'tool',
+                content: `\n\n[Tool Result] ${chunk.toolId}\n${JSON.stringify(chunk.result)}`,
+                metadata: {
+                  toolId: chunk.toolId,
+                  args: chunk.args,
+                  callId: chunk.callId,
+                  status: chunk.result?.ok ? 'success' : 'error',
                 }
-                // In a real loop, we would trigger another LLM call here with the tool results
-              } else {
-                console.log(`Tool ${chunk.toolId} rejected: ${permission.reason}`);
-              }
+              });
+              Bus.publish(ToolEvent.Executed, {
+                sessionId: session.id,
+                toolId: chunk.toolId,
+                callId: chunk.callId,
+                args: chunk.args,
+                result: chunk.result,
+              });
               break;
 
             case 'finish':
