@@ -1,9 +1,7 @@
 import { streamText, tool } from 'ai';
 import { Message } from './index.ts';
 import { Provider, ProviderTransform } from '../provider/provider.ts';
-import { PermissionNext } from '../permission/next.ts';
-import { Instance } from '../project/instance.ts';
-import { ToolRegistry, ToolInfo } from '../tool/registry.ts';
+import { ToolInfo } from '../tool/registry.ts';
 
 export interface LLMStreamOptions {
   model: string;
@@ -22,20 +20,6 @@ export const LLM = {
       sdkTools[t.id] = tool({
         description: t.description,
         parameters: t.parameters as any, // Expects JSON Schema or Zod
-        execute: async (args: any) => {
-          const permission = await PermissionNext.ask(t.id, args, 'standard');
-          if (permission.status !== 'allow') {
-            return { ok: false, error: permission.reason || 'Permission denied', status: permission.status };
-          }
-
-          try {
-            const directory = Instance.directory;
-            const result = await ToolRegistry.run(t.id, args, directory);
-            return { ok: true, result };
-          } catch (error: any) {
-            return { ok: false, error: error?.message || String(error) };
-          }
-        },
       });
     }
 
@@ -43,7 +27,7 @@ export const LLM = {
       model,
       messages,
       tools: sdkTools,
-      maxSteps: 10,
+      maxSteps: 1,
     });
 
     let hasStartedText = false;
@@ -65,17 +49,7 @@ export const LLM = {
             args: chunk.args,
             callId: chunk.toolCallId,
           };
-          break;
-
-        case 'tool-result':
-          yield {
-            type: 'tool-result',
-            toolId: chunk.toolName,
-            args: chunk.args,
-            result: chunk.result,
-            callId: chunk.toolCallId,
-          };
-          break;
+          return;
 
         case 'finish':
           if (hasStartedText) {
