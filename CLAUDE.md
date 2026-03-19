@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenCode is designed to be built and run with **Bun**.
 
-- **Dev (TUI)**: `bun dev` (Runs the terminal UI)
-- **Dev (Server)**: `bun dev serve` (Runs the Hono HTTP server on port 4096)
+- **Dev (TUI)**: `bun dev agent` (Interactive terminal mode. It connects the CLI directly to the agent processor for local, real-time chatting).
+- **Dev (Server)**: `bun dev serve` (Headless mode. Runs the Hono API server on port 4096 to allow external clients like the Web App or Desktop App to connect via HTTP + SSE).
 - **Build**: `bun build` (Placeholder for build process)
 - **Lint**: `bun lint` (Placeholder for linting)
 - **Test**: `bun test` (Run all tests)
