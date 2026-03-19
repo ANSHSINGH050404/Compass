@@ -78,6 +78,14 @@ app.get('/event', (c) => {
         if (filterSessionId && data.sessionId !== filterSessionId) return;
         send(PartEvent.Updated.name, data);
       }),
+      Bus.subscribe(ToolEvent.Started, (data) => {
+        if (filterSessionId && data.sessionId !== filterSessionId) return;
+        send(ToolEvent.Started.name, data);
+      }),
+      Bus.subscribe(ToolEvent.Output, (data) => {
+        if (filterSessionId && data.sessionId !== filterSessionId) return;
+        send(ToolEvent.Output.name, data);
+      }),
       Bus.subscribe(ToolEvent.Executed, (data) => {
         if (filterSessionId && data.sessionId !== filterSessionId) return;
         send(ToolEvent.Executed.name, data);

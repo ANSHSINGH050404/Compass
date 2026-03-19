@@ -16,6 +16,19 @@ export const PartEvent = {
 };
 
 export const ToolEvent = {
+  Started: { name: 'tool:started' } as EventDef<{
+    sessionId: string;
+    toolId: string;
+    callId?: string;
+    args: any;
+  }>,
+  Output: { name: 'tool:output' } as EventDef<{
+    sessionId: string;
+    toolId: string;
+    callId?: string;
+    stream: 'stdout' | 'stderr';
+    chunk: string;
+  }>,
   Executed: { name: 'tool:executed' } as EventDef<{
     sessionId: string;
     toolId: string;

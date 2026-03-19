@@ -2,7 +2,7 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Glob } from 'bun';
 import { z } from 'zod';
-import { ToolRegistry } from './registry.ts';
+import { ToolContext, ToolRegistry } from './registry.ts';
 
 export const ReadTool = {
   id: 'read',
@@ -10,7 +10,7 @@ export const ReadTool = {
   parameters: z.object({
     path: z.string().describe('Relative path to the file.'),
   }),
-  async execute(args: { path: string }, ctx: { directory: string }) {
+  async execute(args: { path: string }, ctx: ToolContext) {
     const fullPath = join(ctx.directory, args.path);
     const content = await readFile(fullPath, 'utf8');
     return { content };
@@ -24,7 +24,7 @@ export const WriteTool = {
     path: z.string().describe('Relative path to the file.'),
     content: z.string().describe('The new content to write.'),
   }),
-  async execute(args: { path: string, content: string }, ctx: { directory: string }) {
+  async execute(args: { path: string, content: string }, ctx: ToolContext) {
     const fullPath = join(ctx.directory, args.path);
     await writeFile(fullPath, args.content, 'utf8');
     return { status: 'success', path: args.path };
@@ -37,7 +37,7 @@ export const LsTool = {
   parameters: z.object({
     directory: z.string().describe('Relative path to the directory (optional).').optional(),
   }),
-  async execute(args: { directory?: string }, ctx: { directory: string }) {
+  async execute(args: { directory?: string }, ctx: ToolContext) {
     const targetDir = join(ctx.directory, args.directory || '.');
     const files = await readdir(targetDir, { withFileTypes: true });
     return files.map(f => ({
@@ -53,7 +53,7 @@ export const GlobTool = {
   parameters: z.object({
     pattern: z.string().describe('The glob pattern (e.g. "**/*.ts").'),
   }),
-  async execute(args: { pattern: string }, ctx: { directory: string }) {
+  async execute(args: { pattern: string }, ctx: ToolContext) {
     const glob = new Glob(args.pattern);
     const results = [];
     for await (const file of glob.scan(ctx.directory)) {
@@ -70,7 +70,7 @@ export const GrepTool = {
     pattern: z.string().describe('The regex pattern to search for.'),
     glob: z.string().describe('Glob pattern to filter files (optional).').optional(),
   }),
-  async execute(args: { pattern: string, glob?: string }, ctx: { directory: string }) {
+  async execute(args: { pattern: string, glob?: string }, ctx: ToolContext) {
     const globPattern = args.glob || '**/*';
     const glob = new Glob(globPattern);
     const regex = new RegExp(args.pattern);

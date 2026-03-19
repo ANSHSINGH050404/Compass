@@ -1,8 +1,14 @@
+export interface ToolContext {
+  directory: string;
+  sessionId: string;
+  callId?: string;
+}
+
 export interface ToolInfo {
   id: string;
   description: string;
   parameters: any;
-  execute: (args: any, ctx: { directory: string }) => Promise<any>;
+  execute: (args: any, ctx: ToolContext) => Promise<any>;
 }
 
 const registry = new Map<string, ToolInfo>();
@@ -20,9 +26,9 @@ export const ToolRegistry = {
     return Array.from(registry.values());
   },
 
-  async run(id: string, args: any, directory: string): Promise<any> {
+  async run(id: string, args: any, ctx: ToolContext): Promise<any> {
     const tool = registry.get(id);
     if (!tool) throw new Error(`Tool ${id} not found`);
-    return await tool.execute(args, { directory });
+    return await tool.execute(args, ctx);
   }
 };

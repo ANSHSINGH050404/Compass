@@ -67,9 +67,20 @@ export const SessionProcessor = {
           const permission = await PermissionNext.ask(toolCall.toolId, toolCall.args, 'standard');
           let toolResult: any;
 
+          Bus.publish(ToolEvent.Started, {
+            sessionId: session.id,
+            toolId: toolCall.toolId,
+            callId: toolCall.callId,
+            args: toolCall.args,
+          });
+
           if (permission.status === 'allow') {
             try {
-              toolResult = await ToolRegistry.run(toolCall.toolId, toolCall.args, session.directory);
+              toolResult = await ToolRegistry.run(toolCall.toolId, toolCall.args, {
+                directory: session.directory,
+                sessionId: session.id,
+                callId: toolCall.callId,
+              });
             } catch (error: any) {
               toolResult = { error: error?.message || String(error) };
             }
