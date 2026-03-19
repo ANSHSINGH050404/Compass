@@ -25,13 +25,7 @@ OpenCode is an open-source AI coding agent with a client-server architecture.
 5.  **Tool Registry**: A unified interface for tools (`packages/opencode/src/tool/`). Tools are registered and called by the LLM via the processor.
 6.  **Permission Engine**: Ruleset-based tool authorization (`packages/opencode/src/permission/next.ts`). Controls whether tools can execute immediately or require user approval.
 
-### Code Style & Guidelines
 
-- **Naming**: Use single-word names where possible (e.g., `Bus`, `Instance`, `Session`).
-- **Functional Style**: Prefer functional patterns over deep class hierarchies.
-- **Error Handling**: Follow the project rule of "no try/catch" for expected failures; let the system handle them or return explicit error states.
-- **Concurrency**: Use the `Instance` system to ensure thread-safety across concurrent project requests.
-- **Environment**: All shell commands must use Unix syntax (forward slashes, `/dev/null`).
 
 ## 📁 File Structure (Key Paths)
 
