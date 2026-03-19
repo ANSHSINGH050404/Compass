@@ -5,8 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run packages/opencode/src/index.ts",
-    "serve": "bun run packages/opencode/src/server/server.ts",
+    "dev": "bun run packages/compass/src/index.ts",
+    "server": "bun run packages/compass/src/server/server.ts",
     "test": "bun test"
   },
   "dependencies": {
